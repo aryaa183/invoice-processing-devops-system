@@ -5,12 +5,13 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "test": "node --test --test-isolation=none tests/*.test.js",
     "lint": "eslint .",
     "build": "node scripts/build-report.js",
     "ci": "npm run lint && npm run test && npm run build"
   },
+  "health": "curl http://localhost:3000/health",
   "keywords": [
     "devops",
     "ocr",

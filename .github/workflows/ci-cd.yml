@@ -2,54 +2,73 @@ name: CI-CD Pipeline
 
 on:
   push:
-    branches: ["main", "master"]
+    branches: ["main"]
   pull_request:
-    branches: ["main", "master"]
+    branches: ["main"]
 
 jobs:
   quality:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4. Lint check
       - name: Static code analysis
         run: npm run lint
 
-      - name: Run CI tests
+      # 5. Run tests
+      - name: Run tests
         run: npm test
 
+      # 6. Build (report generation)
       - name: Build reports
         run: npm run build
 
+      # 7. Upload artifact
       - name: Upload build report
         uses: actions/upload-artifact@v4
         with:
           name: build-report
           path: artifacts/build-report.md
 
-  deploy-staging:
-    if: github.ref == 'refs/heads/main'
+  deploy:
+    # ONLY run on push to main (not PRs)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: quality
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # 1. Trigger Render Deployment
+      - name: Trigger Render Deploy
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "❌ ERROR: Missing RENDER_DEPLOY_HOOK_URL"
+            exit 1
+          fi
 
-      - name: Build Docker image
-        run: docker build -t invoice-processing-system:staging .
+          echo "🚀 Triggering Render deployment..."
+          curl -X POST "$RENDER_DEPLOY_HOOK_URL"
 
-      - name: Trigger staging deployment
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+      # 2. Optional: Health Check (replace URL after deploy)
+      - name: Health Check
+        run: |
+          echo "⏳ Waiting for deployment..."
+          sleep 15
+
+          curl -f https://your-app-url.onrender.com/health || exit 1
