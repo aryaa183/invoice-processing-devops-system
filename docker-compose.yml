@@ -1,0 +1,18 @@
+services:
+  invoice-app:
+    build: .
+    container_name: invoice-processing-staging
+    ports:
+      - "8080:3000"
+    environment:
+      PORT: 3000
+      DATA_DIR: /app/data
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - invoice-data:/app/data
+      - invoice-uploads:/app/uploads
+
+volumes:
+  invoice-data:
+  invoice-uploads:
+

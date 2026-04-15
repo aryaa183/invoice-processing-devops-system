@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Processing & Auto-Entry System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">DevOps Mini Project</p>
+        <h1>Invoice Processing & Auto-Entry System</h1>
+        <p class="lead">
+          Upload an invoice image or plain text file, extract structured billing fields, and store them in a searchable database through a CI/CD-ready application.
+        </p>
+        <div class="tag-row">
+          <span>OCR Extraction</span>
+          <span>SQLite Storage</span>
+          <span>CI Testing</span>
+          <span>Docker Deployment</span>
+        </div>
+      </div>
+      <div class="summary-card panel">
+        <p class="eyebrow">Problem Definition</p>
+        <h2>Manual invoice entry is slow, error-prone, and hard to scale.</h2>
+        <p>
+          Teams often copy vendor name, invoice number, dates, and totals by hand. This project automates the extraction pipeline and packages it with quality gates for delivery.
+        </p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <section class="panel">
+        <div class="section-head">
+          <h2>Upload Invoice</h2>
+          <p>Supported for demo: invoice images and plain text invoice files.</p>
+        </div>
+        <form id="uploadForm" class="stack">
+          <label class="field">
+            <span>Select invoice file</span>
+            <input id="invoiceFile" name="invoice" type="file" accept=".txt,image/*">
+          </label>
+          <button type="submit">Upload and Extract</button>
+        </form>
+
+        <div class="divider"><span>or</span></div>
+
+        <form id="textForm" class="stack">
+          <label class="field">
+            <span>Paste invoice text</span>
+            <textarea id="invoiceText" rows="11" placeholder="Vendor: Bright Stationery Pvt Ltd&#10;Invoice Number: INV-2026-014&#10;Date: 2026-04-11&#10;Due Date: 2026-04-20&#10;Subtotal: INR 12500&#10;Tax: INR 2250&#10;Total: INR 14750"></textarea>
+          </label>
+          <button type="submit">Process Text Invoice</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2>Latest Extraction</h2>
+          <p>Structured fields returned by the parser.</p>
+        </div>
+        <div id="resultState" class="empty-state">No invoice processed yet.</div>
+        <dl id="resultCard" class="result-card hidden">
+          <div><dt>Vendor</dt><dd id="vendorName">-</dd></div>
+          <div><dt>Invoice Number</dt><dd id="invoiceNumber">-</dd></div>
+          <div><dt>Invoice Date</dt><dd id="invoiceDate">-</dd></div>
+          <div><dt>Due Date</dt><dd id="dueDate">-</dd></div>
+          <div><dt>Subtotal</dt><dd id="subtotal">-</dd></div>
+          <div><dt>Tax</dt><dd id="tax">-</dd></div>
+          <div><dt>Total</dt><dd id="total">-</dd></div>
+          <div><dt>Confidence</dt><dd id="confidence">-</dd></div>
+        </dl>
+      </section>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Stored Invoices</h2>
+        <p>Recent entries persisted in SQLite.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Vendor</th>
+              <th>Invoice No</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Source</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody">
+            <tr>
+              <td colspan="7" class="placeholder">No invoices stored yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="footer-grid">
+      <article class="panel mini-panel">
+        <p class="eyebrow">Build Tool</p>
+        <h3>npm Scripts</h3>
+        <p>`npm run ci` chains lint, tests, and build reporting in one repeatable command.</p>
+      </article>
+      <article class="panel mini-panel">
+        <p class="eyebrow">Static Analysis</p>
+        <h3>ESLint Checks</h3>
+        <p>Code quality is validated in CI before the project can move toward deployment.</p>
+      </article>
+      <article class="panel mini-panel">
+        <p class="eyebrow">Deployment</p>
+        <h3>Docker + Staging</h3>
+        <p>The repository includes a Docker image and a GitHub Actions workflow for staging deployment.</p>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

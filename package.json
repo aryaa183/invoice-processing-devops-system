@@ -1,0 +1,36 @@
+{
+  "name": "invoice-processing-devops-system",
+  "version": "1.0.0",
+  "description": "Invoice processing and auto-entry system with OCR, SQLite storage, CI testing, Docker, and deployment workflow.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "node --test --test-isolation=none tests/*.test.js",
+    "lint": "eslint .",
+    "build": "node scripts/build-report.js",
+    "ci": "npm run lint && npm run test && npm run build"
+  },
+  "keywords": [
+    "devops",
+    "ocr",
+    "invoice",
+    "ci-cd",
+    "docker"
+  ],
+  "author": "Arya",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "supertest": "^7.2.2",
+    "tesseract.js": "^7.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.0",
+    "globals": "^17.5.0"
+  }
+}

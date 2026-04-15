@@ -1,0 +1,9 @@
+node_modules/
+data/
+uploads/
+.env
+artifacts/*.log
+artifacts/*.txt
+artifacts/*.json
+coverage/
+
