@@ -78,7 +78,7 @@ function createApp(options = {}) {
   });
 
   // ✅ ERROR HANDLER
-  app.use((error, _request, response, _next) => {
+  app.use((error, _request, response) => {
     response.status(400).json({
       error: error.message || "Invoice processing failed.",
     });
