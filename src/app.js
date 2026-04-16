@@ -28,46 +28,53 @@ function createApp(options = {}) {
   });
 
   app.use(express.json({ limit: "1mb" }));
- // app.use(express.static(path.resolve(__dirname, "../public")));
+  // app.use(express.static(path.resolve(__dirname, "../public")));
 
-  app.get("/api/health", (_request, response) => {
+  // ✅ HEALTH
+  app.get("/api/health", async (_request, response) => {
+    const invoices = await repository.list();
     response.json({
       status: "ok",
       service: "invoice-processing-system",
-      storedInvoices: repository.list().length,
+      storedInvoices: invoices.length,
     });
   });
 
-  app.get("/api/invoices", (_request, response) => {
+  // ✅ GET ALL INVOICES
+  app.get("/api/invoices", async (_request, response) => {
+    const invoices = await repository.list();
     response.json({
-      invoices: repository.list(),
+      invoices,
     });
   });
 
-  app.post("/api/invoices/text", (request, response, next) => {
+  // ✅ TEXT INPUT
+  app.post("/api/invoices/text", async (request, response, next) => {
     try {
       const invoice = extractInvoiceFields(request.body.text || "", {
         sourceType: "manual-text",
         sourceName: request.body.sourceName || "dashboard-input",
       });
 
-      const savedInvoice = repository.insert(invoice);
+      const savedInvoice = await repository.insert(invoice);
       response.status(201).json({ invoice: savedInvoice });
     } catch (error) {
       next(error);
     }
   });
 
+  // ✅ FILE UPLOAD
   app.post("/api/invoices/upload", upload.single("invoice"), async (request, response, next) => {
     try {
       const invoice = await processUploadedInvoice(request.file);
-      const savedInvoice = repository.insert(invoice);
+      const savedInvoice = await repository.insert(invoice);
       response.status(201).json({ invoice: savedInvoice });
     } catch (error) {
       next(error);
     }
   });
 
+  // ❌ ERROR HANDLER
   app.use((error, _request, response) => {
     response.status(400).json({
       error: error.message || "Invoice processing failed.",
