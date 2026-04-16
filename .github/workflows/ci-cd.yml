@@ -74,6 +74,5 @@ jobs:
       - name: Health Check
         run: |
           echo "⏳ Waiting for deployment..."
-          sleep 15
-
-          curl -f https://your-app-url.onrender.com/health || exit 1
+          sleep 30
+            curl -f https://invoice-app-zo9c.onrender.com/api/health || exit 1

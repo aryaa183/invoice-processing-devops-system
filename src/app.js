@@ -14,6 +14,7 @@ function createApp(options = {}) {
   const app = express();
   const dataDirectory = path.resolve(options.dataDirectory || process.env.DATA_DIR || "./data");
   const uploadDirectory = path.resolve(options.uploadDirectory || process.env.UPLOAD_DIR || "./uploads");
+
   ensureDirectory(dataDirectory);
   ensureDirectory(uploadDirectory);
 
@@ -28,24 +29,29 @@ function createApp(options = {}) {
   });
 
   app.use(express.json({ limit: "1mb" }));
-  // app.use(express.static(path.resolve(__dirname, "../public")));
 
   // ✅ HEALTH
   app.get("/api/health", async (_request, response) => {
-    const invoices = await repository.list();
-    response.json({
-      status: "ok",
-      service: "invoice-processing-system",
-      storedInvoices: invoices.length,
-    });
+    try {
+      const invoices = await repository.list();
+      response.json({
+        status: "ok",
+        service: "invoice-processing-system",
+        storedInvoices: invoices.length,
+      });
+    } catch (error) {
+      response.status(500).json({ status: "error", message: error.message });
+    }
   });
 
   // ✅ GET ALL INVOICES
-  app.get("/api/invoices", async (_request, response) => {
-    const invoices = await repository.list();
-    response.json({
-      invoices,
-    });
+  app.get("/api/invoices", async (_request, response, next) => {
+    try {
+      const invoices = await repository.list();
+      response.json({ invoices });
+    } catch (error) {
+      next(error);
+    }
   });
 
   // ✅ TEXT INPUT
@@ -55,7 +61,6 @@ function createApp(options = {}) {
         sourceType: "manual-text",
         sourceName: request.body.sourceName || "dashboard-input",
       });
-
       const savedInvoice = await repository.insert(invoice);
       response.status(201).json({ invoice: savedInvoice });
     } catch (error) {
@@ -74,8 +79,8 @@ function createApp(options = {}) {
     }
   });
 
-  // ❌ ERROR HANDLER
-  app.use((error, _request, response) => {
+  // ✅ ERROR HANDLER — must have exactly 4 params
+  app.use((error, _request, response, _next) => {
     response.status(400).json({
       error: error.message || "Invoice processing failed.",
     });
@@ -84,6 +89,4 @@ function createApp(options = {}) {
   return app;
 }
 
-module.exports = {
-  createApp,
-};
+module.exports = { createApp };
