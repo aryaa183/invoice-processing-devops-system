@@ -23,17 +23,15 @@ function createApp(options = {}) {
 
   const upload = multer({
     dest: uploadDirectory,
-    limits: {
-      fileSize: 5 * 1024 * 1024,
-    },
+    limits: { fileSize: 5 * 1024 * 1024 },
   });
 
   app.use(express.json({ limit: "1mb" }));
 
   // ✅ HEALTH
-  app.get("/api/health", async (_request, response) => {
+  app.get("/api/health", (_request, response) => {
     try {
-      const invoices = await repository.list();
+      const invoices = repository.list();
       response.json({
         status: "ok",
         service: "invoice-processing-system",
@@ -45,9 +43,9 @@ function createApp(options = {}) {
   });
 
   // ✅ GET ALL INVOICES
-  app.get("/api/invoices", async (_request, response, next) => {
+  app.get("/api/invoices", (_request, response, next) => {
     try {
-      const invoices = await repository.list();
+      const invoices = repository.list();
       response.json({ invoices });
     } catch (error) {
       next(error);
@@ -61,7 +59,7 @@ function createApp(options = {}) {
         sourceType: "manual-text",
         sourceName: request.body.sourceName || "dashboard-input",
       });
-      const savedInvoice = await repository.insert(invoice);
+      const savedInvoice = repository.insert(invoice);
       response.status(201).json({ invoice: savedInvoice });
     } catch (error) {
       next(error);
@@ -72,14 +70,14 @@ function createApp(options = {}) {
   app.post("/api/invoices/upload", upload.single("invoice"), async (request, response, next) => {
     try {
       const invoice = await processUploadedInvoice(request.file);
-      const savedInvoice = await repository.insert(invoice);
+      const savedInvoice = repository.insert(invoice);
       response.status(201).json({ invoice: savedInvoice });
     } catch (error) {
       next(error);
     }
   });
 
-  // ✅ ERROR HANDLER — must have exactly 4 params
+  // ✅ ERROR HANDLER
   app.use((error, _request, response, _next) => {
     response.status(400).json({
       error: error.message || "Invoice processing failed.",
