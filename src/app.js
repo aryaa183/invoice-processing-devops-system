@@ -28,6 +28,14 @@ function createApp(options = {}) {
 
   app.use(express.json({ limit: "1mb" }));
 
+  // ✅ ROOT FIX (VERY IMPORTANT)
+  app.get("/", (_req, res) => {
+    res.json({
+      message: "Invoice Processing API is running 🚀",
+      endpoints: ["/api/health", "/api/invoices"]
+    });
+  });
+
   // ✅ HEALTH
   app.get("/api/health", (_request, response) => {
     try {
@@ -79,6 +87,7 @@ function createApp(options = {}) {
 
   // ✅ ERROR HANDLER
   app.use((error, _request, response) => {
+    console.error(error); // 👈 helps debugging
     response.status(400).json({
       error: error.message || "Invoice processing failed.",
     });
