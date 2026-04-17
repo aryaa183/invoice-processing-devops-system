@@ -12,29 +12,36 @@ function ensureDirectory(directoryPath) {
 
 function createApp(options = {}) {
   const app = express();
-  const dataDirectory = path.resolve(options.dataDirectory || process.env.DATA_DIR || "./data");
-  const uploadDirectory = path.resolve(options.uploadDirectory || process.env.UPLOAD_DIR || "./uploads");
+
+  const dataDirectory = path.resolve(
+    options.dataDirectory || process.env.DATA_DIR || "./data"
+  );
+  const uploadDirectory = path.resolve(
+    options.uploadDirectory || process.env.UPLOAD_DIR || "./uploads"
+  );
 
   ensureDirectory(dataDirectory);
   ensureDirectory(uploadDirectory);
 
-  const database = options.database || createDatabase(path.join(dataDirectory, "invoices.db"));
-  const repository = options.repository || createInvoiceRepository(database);
+  const database =
+    options.database ||
+    createDatabase(path.join(dataDirectory, "invoices.db"));
+
+  const repository =
+    options.repository || createInvoiceRepository(database);
 
   const upload = multer({
     dest: uploadDirectory,
     limits: { fileSize: 5 * 1024 * 1024 },
   });
 
+  // ✅ Middleware
   app.use(express.json({ limit: "1mb" }));
 
-  // ✅ ROOT FIX (VERY IMPORTANT)
-  app.get("/", (_req, res) => {
-    res.json({
-      message: "Invoice Processing API is running 🚀",
-      endpoints: ["/api/health", "/api/invoices"]
-    });
-  });
+  // ✅ SERVE FRONTEND (IMPORTANT)
+  app.use(express.static(path.join(__dirname, "../public")));
+
+  // ================= API ROUTES =================
 
   // ✅ HEALTH
   app.get("/api/health", (_request, response) => {
@@ -46,7 +53,9 @@ function createApp(options = {}) {
         storedInvoices: invoices.length,
       });
     } catch (error) {
-      response.status(500).json({ status: "error", message: error.message });
+      response
+        .status(500)
+        .json({ status: "error", message: error.message });
     }
   });
 
@@ -67,6 +76,7 @@ function createApp(options = {}) {
         sourceType: "manual-text",
         sourceName: request.body.sourceName || "dashboard-input",
       });
+
       const savedInvoice = repository.insert(invoice);
       response.status(201).json({ invoice: savedInvoice });
     } catch (error) {
@@ -74,20 +84,24 @@ function createApp(options = {}) {
     }
   });
 
-  // ✅ FILE UPLOAD
-  app.post("/api/invoices/upload", upload.single("invoice"), async (request, response, next) => {
-    try {
-      const invoice = await processUploadedInvoice(request.file);
-      const savedInvoice = repository.insert(invoice);
-      response.status(201).json({ invoice: savedInvoice });
-    } catch (error) {
-      next(error);
+  // ✅ FILE UPLOAD (OCR)
+  app.post(
+    "/api/invoices/upload",
+    upload.single("invoice"),
+    async (request, response, next) => {
+      try {
+        const invoice = await processUploadedInvoice(request.file);
+        const savedInvoice = repository.insert(invoice);
+        response.status(201).json({ invoice: savedInvoice });
+      } catch (error) {
+        next(error);
+      }
     }
-  });
+  );
 
-  // ✅ ERROR HANDLER
+  // ================= ERROR HANDLER =================
   app.use((error, _request, response) => {
-    console.error(error); // 👈 helps debugging
+    console.error(error);
     response.status(400).json({
       error: error.message || "Invoice processing failed.",
     });
